@@ -1,0 +1,40 @@
+#!/usr/bin/python
+#-*- encoding:UTF-8 -*-
+# from Common.run import *
+
+# from public.request import *
+# from public.sqldb import *
+# from public.log import *
+# from public.sqldb import Transferip_db
+# from public.mongodb import Transferip_mongodb
+# from public.carryfunction import Transferfunction
+# from public.script_function import *
+
+from django.db.models import F
+import unittest,re,json,jsonpath
+class ${interface_name_zh}(unittest.TestCase):
+    '''${content}'''
+    @classmethod
+    def setUpClass(cls):
+        # cls.transferlogname=Transferlogname()
+        # cls.transferip_db=Transferip_db()
+        # cls.transfermongodb = Transferip_mongodb()
+        # cls.transferfunction = Transferfunction()
+        # api="${api}"
+        # cls.url=cls.transferip_db.ip[str(cls.transferlogname.test_carryid)+"ip"]+api
+        cls.url = "https://api.apiopen.top/searchAuthors"
+        # pass
+        print("测试开始")
+
+    @classmethod
+
+    def tearDownClass(cls):
+        print("测试结束")
+
+        # def test_001(self):
+        # request=requests.request("get", "https://api.apiopen.top/searchAuthors", params={'name':'李白'})
+        # request=request.json()
+        # request=str(request)
+        # self.assertRegex(request,'200')
+
+

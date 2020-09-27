@@ -128,6 +128,7 @@ def judge (assert_response):
     global filenumber
     switch = 1
     assert_response_len = len(list(assert_response.keys()))
+    
     if  switch == 1:
         if filenumber >0:
             print("存在断言失败的情况（且），案例执行失败")

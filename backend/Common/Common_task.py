@@ -1,5 +1,6 @@
 import os,shutil
 from execute.models import *
+from Common.make_testcase import *
 
 
 #删除任务目录以及文件
@@ -14,10 +15,10 @@ def rm_task(task_name):
 # 2.注意：接口表内的id 与 interface_id
 def create_task(case_ids,task_name,remark,UUID):
     for case_id in case_ids:
-        case_data=Interfaces.objects.filter(interface_id=case_id).values("interface_name_zh","interface_name_en")[0] #接口内得信息：接口名称+接口信息
+        case_data=Interfaces.objects.filter(id=case_id).values("interface_name_zh","interface_name_en")[0] #接口内得信息：接口名称+接口信息
         # 得到外键数据
-        interfaces = Interfaces.objects.get(interface_id=case_id)  #case:接口名称
-        Task.objects.create(task_name=task_name,uuid=UUID,interfaces=interfaces,remark=remark,status=0)
+        interface_name = Interfaces.objects.get(id=case_id)
+        Task.objects.create(task_name=task_name,uuid=UUID,interface_name=interface_name,remark=remark,status=0)
 
 # 判断一个夹是否存在，不存在创建
 def create_dir(dir):
@@ -63,45 +64,43 @@ def get_py_data(case_ids,testcasedir,task_name,case_name=None):
     # db_remark=set([])
     str=','
     for case_id in case_ids:
-        # 获取接口名称+接口api+接口描述信息
-        interface_data=Interfaces.objects.filter(id=case_id).values("interface_name_zh","interface_name_en","content")[0]
+        # 获取接口名称+接口api+接口描述信息+api+接口依赖
+        interface_data=Interfaces.objects.filter(id=case_id).values("interface_name_zh","interface_name_en","content","relation","request_way")[0]
+        print(interface_data)
         # 得到外键数据
-        interface = Interfaces.objects.get(id=case_id)
-        print(interface)
+        interface_name = Interfaces.objects.get(id=case_id)
 
-        # if case_name:
-        #     step_list_data=Interface_Case.objects.filter(interface=interface,status=1,case_name=case_name).values("id","case_name")
-        #     print(step_list_data)
-        # else:
-        #     step_list_data = Step.objects.filter(case=case, status=1).values("id", "step_name",
-        #                                                                                           "method", "params",
-        #                                                                                           "headers", "files",
-    #                                                                                               "assert_response",
-    #                                                                                               "api_dependency",
-    #                                                                                               "step_desc")
-    #     #     step_list_data：添加的测试案例信息id，请求头，断言，请求方式，api关联,案例名称，案例描述等
-    #     # step：测试案例名称
-    #     for step_data in step_list_data:
-    #         #得到外键数据
-    #         step = Step.objects.get(id=step_data['id'])
-    #         #sql数据
-    #         sql_list_data=Sql.objects.filter(step=step,status=1).values("sql_condition","is_select","variable","sql","db","db_remark")
-    #         #将数据用到的几个数据库id和连接名写入任务表
-    #         for sql_data in sql_list_data:
-    #             db.add(sql_data['db'])
-    #             db_remark.add(sql_data['db_remark'])
-    #
-    #         step_data['sql_list_data']=sql_list_data
-    #
-    #         # Nosql数据
-    #         nosql_list_data = NoSql.objects.filter(step=step, status=1).values("Nosql_dataType","Nosql_condition", "is_select", "variable",
-    #                                                                        "Nosql")
-    #         step_data['sql_list_data'] = sql_list_data
-    #         step_data['nosql_list_data'] = nosql_list_data
-    #     case_data["step_list_data"]=step_list_data
-    #     make_testcase=Make_testcase(testcasedir,case_data)
-    #     #print (case_data)
-    # # 将数据用到的几个数据库id和连接名写入任务表
-    # dbstr=str.join(db)
-    # db_remarkstr=str.join(db_remark)
-    # Task.objects.filter(task_name=task_name).update(db=dbstr,db_remark=db_remarkstr)
+
+        # step_list_data：添加的测试案例信息id，请求头，断言，请求方式，api关联, 案例名称，案例描述等
+        if case_name:
+            # 测试案例表取值
+            Interface_Case_data=Interface_Case.objects.filter(interface_name=interface_name,status=1,case_name=case_name).values("id","case_name","check_key",
+                                                                                                                            "case_type","check_type","header_1","header_2",
+                                                                                                                            "check_condition","check_value","action_condition")
+            # 请求头表去请求头值
+            Interface_Header_data = Interface_Header.objects.filter(interface_name=interface_name).values("id","head_key")
+            # 入参表取值
+            Interface_Case_Param_data = Interface_Case_Param.objects.filter(interface_name=interface_name).values("id","param_key","param_value")
+
+        else:
+            Interface_Case_data = Interface_Case.objects.filter(interface_name=interface_name, status=1).values("id","case_name","check_key",
+                                                                                                                  "case_type","check_type","header_1","header_2",
+                                                                                                           "check_condition","check_value","action_condition")
+            Interface_Header_data = Interface_Header.objects.filter(interface_name=interface_name).values("id","head_key")
+            # 入参表取值
+            Interface_Case_Param_data = Interface_Case_Param.objects.filter(interface_name=interface_name).values("id", "param_key","param_value")
+
+            print(Interface_Case_data)
+            print(Interface_Header_data)
+            print(Interface_Case_Param_data)
+
+        interface_data["Interface_Case_data"] = Interface_Case_data
+        interface_data['Interface_Header_data'] = Interface_Header_data
+        interface_data['Interface_Case_Param_data'] = Interface_Case_Param_data
+
+        print(interface_data)
+        print(111)
+
+        # testcasedir:debug+uuid
+        make_testcase = Make_testcase(testcasedir, interface_data)
+
